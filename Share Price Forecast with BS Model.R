@@ -1,5 +1,6 @@
 library(timeSeries)
 library(quantmod)
+library(magrittr)
 
 # Download stock price & Use adjusted close price
 getSymbols("^TWII", src = "yahoo")
@@ -12,10 +13,10 @@ hist_start <- hist_end - 120 + 1
 Y.hist <- Y[hist_start:hist_end]
 
 # Standard deviation based on historical compound returns
-sv_hist <- sd(returns(Y.hist, method = "continuous"), na.rm = T)
+sv_hist <- Y.hist %>% returns(method = "continuous") %>% sd(na.rm = T)
 
 # Mean historical return (drift term)
-mu_hist <- mean(returns(Y.hist, method = "continuous"), na.rm = T)
+mu_hist <- Y.hist %>% returns(method = "continuous") %>% mean(na.rm = T)
 
 # 95% CI for ln(St)
 fc <- log(last(Y.hist)) + (mu_hist - 0.5*sv_hist^2)*t
@@ -35,13 +36,9 @@ plot(Y[hist_start:(hist_end + max(t))],
      ylim = c(min(Y[hist_start:(hist_end + max(t))])*0.95, 
               max(Y[hist_start:(hist_end + max(t))])*1.05),
      xlab = "Time Index",
-     ylab = "Share Price",
+     ylab = "Stock Price",
      panel.first = grid())
 # Mark starting time of the forecast
 points(x = length(Y.hist), y = last(Y.hist), pch = 21, bg = "green")
-# lower bound stock price forecast
-lines(x = xt, y = fc_band$lb, lty = 'dotted', col = 'red', lwd = 2)
-# expected stock price forecast
-lines(x = xt, y = fc_band$m, lty = 'dotted', col = 'blue', lwd = 2)
-# upper bound stock price forecast
-lines(x = xt, y = fc_band$ub, lty = 'dotted', col = 'red', lwd = 2)
+# Line out CI and EV
+for(i in fc_band){lines(x = xt, y = i, lty = 'dotted', col = "blue", lwd = 2)}
