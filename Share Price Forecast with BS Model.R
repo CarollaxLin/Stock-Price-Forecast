@@ -7,7 +7,7 @@ forecast.BS <- function(data, future.t=20, history.t=120){
   # Forecasting periods & Historical time index
   t <- 1:future.t
   hist_end <- nrow(data) - future.t
-  hist_start <- hist_end - 120 + 1
+  hist_start <- hist_end - history.t + 1
   Y.hist <- data[hist_start:hist_end]
   
   # Standard deviation and mean of historical compound returns
